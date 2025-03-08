@@ -10,6 +10,8 @@ import SwiftData
 
 @main
 struct Ticket_ScannerApp: App {
+	@StateObject var authentication = Authentication()
+	
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -25,7 +27,13 @@ struct Ticket_ScannerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+			if authentication.isValidated {
+				ContentView()
+					.environmentObject(authentication)
+			} else {
+				LoginView()
+					.environmentObject(authentication)
+			}
         }
         .modelContainer(sharedModelContainer)
     }

@@ -10,6 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+	@EnvironmentObject var authentication: Authentication
     @Query private var items: [Item]
 
     var body: some View {
@@ -25,6 +26,11 @@ struct ContentView: View {
                 .onDelete(perform: deleteItems)
             }
             .toolbar {
+				ToolbarItem(placement: .topBarTrailing) {
+					Button("Log Out") {
+						authentication.updateValidation(success: false)
+					}
+				}
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                 }
