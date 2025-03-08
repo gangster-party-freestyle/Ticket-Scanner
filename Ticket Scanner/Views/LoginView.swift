@@ -11,7 +11,7 @@ struct LoginView: View {
 	@StateObject private var loginVM = LoginViewModel()
 	@EnvironmentObject var authentication: Authentication
 	
-    var body: some View {
+	var body: some View {
 		VStack {
 			Text("Login")
 			TextField("Email", text: $loginVM.credentials.email)
@@ -37,9 +37,26 @@ struct LoginView: View {
 		.alert(item: $loginVM.error) { error in
 			Alert(title: Text("Invalid Login"), message: Text(error.localizedDescription))
 		}
-    }
+		.onAppear {
+			// If Credentials are saved
+			if loginVM.hasTokenStored() {
+	//			TODO: Check if token is still valid
+				authentication.updateValidation(success: true)
+				
+	//			TODO: Enable FaceID Activation in Settings
+	//			authentication.requestBiometricUnlock { (result: Result<Credentials, Authentication.AuthenticationError>) in
+	//				switch result {
+	//				case .success:
+	//					debugPrint("logged in")
+	//				case .failure(let error):
+	//					debugPrint("couldnt log in: ", error)
+	//				}
+	//			}
+			}
+		}
+	}
 }
 
 #Preview {
-    LoginView()
+	LoginView()
 }

@@ -16,16 +16,27 @@ class LoginViewModel: ObservableObject {
 		credentials.email.isEmpty || credentials.password.isEmpty
 	}
 	
+	func hasTokenStored() -> Bool {
+		let defaults = UserDefaults.standard
+		return defaults.value(forKey: "token") != nil
+	}
+	
 	func login(completion: @escaping (Bool) -> Void) {
+		
+		let defaults = UserDefaults.standard
+		
 		showProgressView = true
-		APIService.shared.login(credentials: credentials) { [unowned self](result: Result<Bool, Authentication.AuthenticationError>) in
+		APIService.shared.login(credentials: credentials) { [unowned self](result: Result<String, Authentication.AuthenticationError>) in
 			showProgressView = false
 			
 			switch result {
-			case .success:
+			case .success(let token):
+				print(token)
+				defaults.setValue(token, forKey: "token")
 				completion(true)
 			case .failure(let authError):
-				credentials = Credentials()
+				print(authError)
+				credentials.password = ""
 				error = authError
 				completion(false)
 			}
