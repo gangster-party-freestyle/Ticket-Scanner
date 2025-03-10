@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Settings: View {
 	
-	@State var url = ""
+	@State var isShowingSheet = false
 	@State var faceIdEnabled = false
 	
 	@State var showAnimations = false
@@ -19,18 +19,29 @@ struct Settings: View {
 		NavigationStack {
 			Form {
 				Section("Server") {
-					NavigationLink {
-						Form {
-							TextField("Medusa Server URL", text: $url)
-							Button("Test Connection") {
-
-								// Reset logic
+					LabeledContent("Connected Server", value: "No Server")
+					Button("Edit Server") {
+						isShowingSheet = true
+					}
+					.sheet(isPresented: $isShowingSheet, content: {
+						NavigationView {
+							Form {
+								MedusaServer()
+							}
+							.toolbar {
+								ToolbarItem(placement: .topBarTrailing) {
+									Button("Save") {
+										isShowingSheet = false
+									}
+								}
+								ToolbarItem(placement: .topBarLeading) {
+									Button("Cancel") {
+										isShowingSheet = false
+									}
+								}
 							}
 						}
-						.navigationTitle("Medusa Server")
-					} label: {
-						Label("Medusa Server", systemImage: "server.rack")
-					}
+					})
 					NavigationLink {
 						Form {
 							Section("Account") {
@@ -44,7 +55,7 @@ struct Settings: View {
 								Toggle("Authenticate with FaceID", isOn: $faceIdEnabled)
 							}
 						}
-						.navigationTitle("Medusa Server")
+						.navigationTitle("Account & Security")
 					} label: {
 						Label("Account & Security", systemImage: "person.badge.key")
 					}
