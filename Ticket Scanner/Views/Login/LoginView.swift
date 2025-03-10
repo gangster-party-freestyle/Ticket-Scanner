@@ -12,27 +12,33 @@ struct LoginView: View {
 	@EnvironmentObject var authentication: Authentication
 	
 	var body: some View {
-		VStack {
-			Text("Login")
-			TextField("Email", text: $loginVM.credentials.email)
-				.keyboardType(.emailAddress)
-			SecureField("Password", text: $loginVM.credentials.password)
-			
-			if loginVM.showProgressView {
-				ProgressView()
+		NavigationStack {
+			Form {
+				MedusaServer()
 			}
+//			VStack {
+//				Text("Login")
+//				TextField("Email", text: $loginVM.credentials.email)
+//					.keyboardType(.emailAddress)
+//				SecureField("Password", text: $loginVM.credentials.password)
+//				
+//				if loginVM.showProgressView {
+//					ProgressView()
+//				}
+//				
+//				Button("Login") {
+//					loginVM.login { success in
+//						authentication.updateValidation(success: success)
+//					}
+//				}
+//				.disabled(loginVM.loginDisabled)
+//				.buttonStyle(.borderedProminent)
+//			}
 			
-			Button("Login") {
-				loginVM.login { success in
-					authentication.updateValidation(success: success)
-				}
-			}
-			.disabled(loginVM.loginDisabled)
-			.buttonStyle(.borderedProminent)
 		}
-		.textInputAutocapitalization(.never)
-		.textFieldStyle(.roundedBorder)
-		.padding()
+		
+		
+		
 		.disabled(loginVM.showProgressView)
 		.alert(item: $loginVM.error) { error in
 			Alert(title: Text("Invalid Login"), message: Text(error.localizedDescription))
