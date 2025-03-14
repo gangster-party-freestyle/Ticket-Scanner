@@ -8,41 +8,104 @@
 import SwiftUI
 
 struct MedusaServer: View {
+	@Binding var success: Bool
 	@Bindable var viewModel = MedusaServerViewModel()
 	
 	@State var url = ""
     var body: some View {
-		Section("Medusa Backend Server") {
-			VStack {
-				TextField("Medusa Server URL", text: $viewModel.url)
-				if let error = viewModel.error {
-					Text(error)
-						.foregroundStyle(.red)
-				}
-			}	
-			Button {
-				viewModel.testConnection { (result: Result<Bool, MedusaServerConnectionError>) in
-					print(result)
-				}
+		Section {
+			LabeledContent("Medusa URL") {
+				TextField("https://…", text: $viewModel.url)
+					.keyboardType(.URL)
+			}
+			LabeledContent {
+				TextField("\("user@example.com")", text: $viewModel.email)
+					.keyboardType(.emailAddress)
 			} label: {
-				if viewModel.loading {
+				Text("E-Mail")
+			}
+
+			LabeledContent {
+				SecureField("Required", text: $viewModel.password)
+					.keyboardType(.emailAddress)
+			} label: {
+				Text("Password")
+			}
+		}
+		.textInputAutocapitalization(.never)
+		.onChange(of: viewModel.url) { _, newValue in
+			viewModel.userInput()
+		}
+		.onChange(of: viewModel.email) { _, newValue in
+			viewModel.userInput()
+		}
+		.onChange(of: viewModel.password) { _, newValue in
+			viewModel.userInput()
+		}
+		
+		Section {
+			if viewModel.loading {
+				HStack {
+					Spacer()
 					ProgressView()
-				} else if viewModel.success {
-					VStack {
-						Text("Test OK")
-						Image(systemName: "checkmark")
+					Text("Testing Connection")
+					Spacer()
+				}
+			} else if viewModel.success {
+				HStack {
+					Spacer()
+					Image(systemName: "checkmark")
+						.foregroundStyle(.green)
+					Text("Test OK")
+					Spacer()
+				}
+			} else if viewModel.error != nil {
+				if let error = viewModel.error {
+					HStack {
+						Spacer()
+						Image(systemName: "xmark")
+							.foregroundStyle(.red)
+						Text(error)
+						Spacer()
 					}
 				} else {
+					HStack {
+						Spacer()
+						Image(systemName: "xmark")
+							.foregroundStyle(.red)
+						Text("Unknown Error")
+						Spacer()
+					}
+				}
+				
+			} else {
+				Button {
+					viewModel.testConnection { (result: Result<Bool, MedusaServerConnectionError>) in
+						switch result {
+						case .success(let connectionSuccess):
+							success = true
+						case .failure:
+							success = false
+						}
+						print(result)
+						
+					}
+				} label: {
 					Text("Test Connection")
 				}
 			}
 		}
-		.textInputAutocapitalization(.never)
     }
+	
+	// Add an initializer for the binding
+		init(success: Binding<Bool> = .constant(false)) {
+			self._success = success
+		}
 }
 
 #Preview {
+	@Previewable @State var success = false
 	Form {
-		MedusaServer()
+		MedusaServer(success: $success)
 	}
 }

@@ -21,25 +21,25 @@ class LoginViewModel: ObservableObject {
 		return defaults.value(forKey: "token") != nil
 	}
 	
-	func login(completion: @escaping (Bool) -> Void) {
-		
-		let defaults = UserDefaults.standard
-		
-		showProgressView = true
-		APIService.shared.login(credentials: credentials) { [unowned self](result: Result<String, Authentication.AuthenticationError>) in
-			showProgressView = false
-			
-			switch result {
-			case .success(let token):
-				print(token)
-				defaults.setValue(token, forKey: "token")
-				completion(true)
-			case .failure(let authError):
-				print(authError)
-				credentials.password = ""
-				error = authError
-				completion(false)
-			}
-		}
-	}
+//	func login(completion: @escaping (Bool) -> Void) {
+//		
+//		let defaults = UserDefaults.standard
+//		
+//		showProgressView = true
+//		APIService.shared.login(credentials: credentials) { [unowned self](result: Result<String, Authentication.AuthenticationError>) in
+//			showProgressView = false
+//			
+//			switch result {
+//			case .success(let token):
+//				print(token)
+//				defaults.setValue(token, forKey: "token")
+//				completion(true)
+//			case .failure(let authError):
+//				print(authError)
+//				credentials.password = ""
+//				error = authError
+//				completion(false)
+//			}
+//		}
+//	}
 }

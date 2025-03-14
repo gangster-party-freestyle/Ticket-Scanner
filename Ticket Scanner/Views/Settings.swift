@@ -14,6 +14,8 @@ struct Settings: View {
 	
 	@State var showAnimations = false
 	
+	@State var connectionOk: Bool = false
+	
 	
 	var body: some View {
 		NavigationStack {
@@ -26,13 +28,16 @@ struct Settings: View {
 					.sheet(isPresented: $isShowingSheet, content: {
 						NavigationView {
 							Form {
-								MedusaServer()
+								MedusaServer(success: $connectionOk)
 							}
+							.navigationTitle("Medusa Account")
+							.navigationBarTitleDisplayMode(.inline)
 							.toolbar {
 								ToolbarItem(placement: .topBarTrailing) {
 									Button("Save") {
 										isShowingSheet = false
 									}
+									.disabled(!connectionOk)
 								}
 								ToolbarItem(placement: .topBarLeading) {
 									Button("Cancel") {

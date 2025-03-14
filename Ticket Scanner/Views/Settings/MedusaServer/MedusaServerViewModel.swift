@@ -16,15 +16,26 @@ enum MedusaServerConnectionError: Error {
 
 @Observable
 class MedusaServerViewModel {
-	var loading = false
+	
 	var url: String = ""
+	var email: String = ""
+	var password: String = ""
+	
+	var loading = false
 	var error: String?
 	var success = false
+	
+	func userInput() {
+		loading = false
+		error = nil
+		success = false
+	}
 	
 	func testConnection(completion: @escaping (Result<Bool, MedusaServerConnectionError>) -> Void) {
 		loading = true
 		error = nil
 		guard let url = URL(string: url) else {
+			self.loading = false
 			error = "Couldn’t parse URL"
 			completion(.failure(.invalidUrl))
 			return
@@ -46,10 +57,17 @@ class MedusaServerViewModel {
 				completion(.failure(.notMedusa))
 				return
 			}
-			
-			
-//			Yayyy
-			self.success = true
 		}.resume()
+		
+		// Check Login
+		APIService.shared.login(url: url, email: email, password: password) { (result: Result<String, Authentication.AuthenticationError>) in
+			switch result {
+			case .success(let string):
+				print("success")
+				self.success = true
+			case .failure(let error):
+				self.error = error.localizedDescription
+			}
+		}
 	}
 }

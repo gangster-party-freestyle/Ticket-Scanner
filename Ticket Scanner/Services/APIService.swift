@@ -20,17 +20,14 @@ struct LoginResponseBody: Decodable {
 class APIService {
 	static let shared = APIService()
 	
-	func login (credentials: Credentials,
+	func login (url: URL,
+				email: String,
+				password: String,
 				completion: @escaping (Result<String, Authentication.AuthenticationError>) -> Void) {
+				
+		let body = LoginRequestBody(email: email, password: password)
 		
-		guard let url = URL(string: "http://10.20.0.20:9000/auth/user/emailpass") else {
-			completion(.failure(.custom(errorMessage: "Couldn’t Parse URL")))
-			return
-		}
-		
-		let body = LoginRequestBody(email: credentials.email, password: credentials.password)
-		
-		var request = URLRequest(url: url)
+		var request = URLRequest(url: url.appending(path: "/auth/user/emailpass"))
 		request.httpMethod = "POST"
 		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 		request.httpBody = try? JSONEncoder().encode(body)
