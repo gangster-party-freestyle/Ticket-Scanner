@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct LoginView: View {
+	@Environment(Medusa.self) private var medusa
 	@StateObject private var loginVM = LoginViewModel()
-	@EnvironmentObject var authentication: Authentication
+	
 	
 	@State var connectionOk = false
 	@State var connectionUrl: String = ""
@@ -30,9 +31,10 @@ struct LoginView: View {
 				
 				Section {
 					Button("Save and Login") {
-						loginVM.storeToken(token: connectionToken)
-						UserDefaults.standard.set(connectionUrl, forKey: "medusaUrl")
-						authentication.updateValidation(success: true)
+						medusa.isAuthenticated = true
+						
+						medusa.saveUrl(url: connectionUrl)
+						medusa.saveToken(token: connectionToken)
 					}
 					.disabled(!connectionOk)
 					.frame(maxWidth: .infinity)
@@ -43,37 +45,6 @@ struct LoginView: View {
 		.disabled(loginVM.showProgressView)
 		.alert(item: $loginVM.error) { error in
 			Alert(title: Text("Invalid Login"), message: Text(error.localizedDescription))
-		}
-		.onAppear {
-			// If Credentials are saved
-			if loginVM.hasTokenStored() {
-				guard let token = loginVM.getToken() else {
-					print("Error: no token stored")
-					authentication.updateValidation(success: false)
-					return
-				}
-				APIService.shared.verifyLogin(token: token) { (result: Result<String, Authentication.AuthenticationError>) in
-					switch result {
-					case .failure(let error):
-						print(error)
-						authentication.updateValidation(success: false)
-					case .success(let token):
-						// TODO: Store Token
-						authentication.updateValidation(success: true)
-					}
-				}
-				
-				
-				//			TODO: Enable FaceID Activation in Settings
-				//			authentication.requestBiometricUnlock { (result: Result<Credentials, Authentication.AuthenticationError>) in
-				//				switch result {
-				//				case .success:
-				//					debugPrint("logged in")
-				//				case .failure(let error):
-				//					debugPrint("couldnt log in: ", error)
-				//				}
-				//			}
-			}
 		}
 	}
 }

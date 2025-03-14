@@ -25,16 +25,16 @@ struct Ticket_ScannerApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+	
+	
 
     var body: some Scene {
         WindowGroup {
-			if authentication.isValidated {
+			if medusa.isAuthenticated {
 				ContentView()
-					.environmentObject(authentication)
 					.environment(medusa)
 			} else {
 				LoginView()
-					.environmentObject(authentication)
 					.environment(medusa)
 			}
         }

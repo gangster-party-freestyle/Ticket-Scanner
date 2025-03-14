@@ -52,15 +52,20 @@ class APIService {
 		}.resume()
 	}
 	
-	func verifyLogin (token: String,
+	func verifyLogin (server: Server,
 					  completion: @escaping (Result<String, Authentication.AuthenticationError>) -> Void) {
-		guard let urlString = UserDefaults.standard.string(forKey: "medusaUrl") else {
+		guard let urlString = server.url else {
 			completion(.failure(.custom(errorMessage: "No Medusa URL Stored")))
 			return
 		}
 		
 		guard let url = URL(string: urlString) else {
 			completion(.failure(.custom(errorMessage: "Couldn’t parse stored URL, it’s probably malformed")))
+			return
+		}
+		
+		guard let token = server.token else {
+			completion(.failure(.custom(errorMessage: "No token available")))
 			return
 		}
 		
@@ -86,6 +91,47 @@ class APIService {
 			}
 			
 			completion(.success(token))
+		}.resume()
+	}
+	
+	func getProducts(server: Server, completion: @escaping (Result<[Products], Authentication.AuthenticationError>) -> Void) {
+		guard let urlString = server.url else {
+			completion(.failure(.custom(errorMessage: "No Medusa URL Stored")))
+			return
+		}
+		
+		guard let url = URL(string: urlString) else {
+			completion(.failure(.custom(errorMessage: "Couldn’t parse stored URL, it’s probably malformed")))
+			return
+		}
+		
+		guard let token = server.token else {
+			completion(.failure(.custom(errorMessage: "No token available")))
+			return
+		}
+		
+		var request = URLRequest(url: url.appending(path: "/admin/products"))
+		request.httpMethod = "GET"
+		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+		
+		URLSession.shared.dataTask(with: request) { (data, response, error) in
+			guard let data = data, error == nil else {
+				completion(.failure(.custom(errorMessage: "No Response from Medusa")))
+				return
+			}
+			
+			guard let productResponse = try? JSONDecoder().decode(ProductResponse.self, from: data) else {
+				completion(.failure(.custom(errorMessage: "Invalid Product Schema")))
+				return
+			}
+			
+			guard let products = productResponse.products else {
+				completion(.failure(.custom(errorMessage: "No Products")))
+				return
+			}
+			
+			completion(.success(products))
 		}.resume()
 	}
 }
