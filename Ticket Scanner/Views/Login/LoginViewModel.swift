@@ -21,6 +21,14 @@ class LoginViewModel: ObservableObject {
 		return defaults.value(forKey: "token") != nil
 	}
 	
+	func getToken() -> String? {
+		return UserDefaults.standard.string(forKey: "token")
+	}
+	
+	func storeToken(token: String) -> Void {
+		UserDefaults.standard.setValue(token, forKey: "token")
+	}
+	
 //	func login(completion: @escaping (Bool) -> Void) {
 //		
 //		let defaults = UserDefaults.standard

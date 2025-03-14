@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MedusaServer: View {
-	@Binding var success: Bool
+	let function: (_: Bool, _: String?, _: String?) -> Void
 	@Bindable var viewModel = MedusaServerViewModel()
 	
 	@State var url = ""
@@ -80,15 +80,16 @@ struct MedusaServer: View {
 				
 			} else {
 				Button {
-					viewModel.testConnection { (result: Result<Bool, MedusaServerConnectionError>) in
+					viewModel.testConnection { (result: Result<String, MedusaServerConnectionError>) in
 						switch result {
-						case .success(let connectionSuccess):
-							success = true
+						case .success(let token):
+							print("success!!! Calling function now")
+							function(true, token, viewModel.url)
 						case .failure:
-							success = false
+							function(false, nil, nil)
+							return
 						}
 						print(result)
-						
 					}
 				} label: {
 					Text("Test Connection")
@@ -96,16 +97,13 @@ struct MedusaServer: View {
 			}
 		}
     }
-	
-	// Add an initializer for the binding
-		init(success: Binding<Bool> = .constant(false)) {
-			self._success = success
-		}
 }
 
 #Preview {
 	@Previewable @State var success = false
 	Form {
-		MedusaServer(success: $success)
+		MedusaServer { success, token, url in
+			
+		}
 	}
 }

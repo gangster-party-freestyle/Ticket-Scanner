@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct Ticket_ScannerApp: App {
+	@State private var medusa = Medusa()
 	@StateObject var authentication = Authentication()
 	
     var sharedModelContainer: ModelContainer = {
@@ -30,9 +31,11 @@ struct Ticket_ScannerApp: App {
 			if authentication.isValidated {
 				ContentView()
 					.environmentObject(authentication)
+					.environment(medusa)
 			} else {
 				LoginView()
 					.environmentObject(authentication)
+					.environment(medusa)
 			}
         }
         .modelContainer(sharedModelContainer)

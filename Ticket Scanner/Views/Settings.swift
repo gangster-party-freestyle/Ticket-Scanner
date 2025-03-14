@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct Settings: View {
+	@Environment(Medusa.self) var medusa
 	
 	@State var isShowingSheet = false
 	@State var faceIdEnabled = false
@@ -15,7 +16,8 @@ struct Settings: View {
 	@State var showAnimations = false
 	
 	@State var connectionOk: Bool = false
-	
+	@State var connectionUrl: String = ""
+	@State var connectionToken: String = ""
 	
 	var body: some View {
 		NavigationStack {
@@ -28,7 +30,15 @@ struct Settings: View {
 					.sheet(isPresented: $isShowingSheet, content: {
 						NavigationView {
 							Form {
-								MedusaServer(success: $connectionOk)
+								MedusaServer { success, token, url in
+									connectionOk = success
+									if success {
+										if let token = token, let url = url {
+											connectionUrl = url
+											connectionToken = token
+										}
+									}
+								}
 							}
 							.navigationTitle("Medusa Account")
 							.navigationBarTitleDisplayMode(.inline)
@@ -36,6 +46,8 @@ struct Settings: View {
 								ToolbarItem(placement: .topBarTrailing) {
 									Button("Save") {
 										isShowingSheet = false
+										
+										UserDefaults.standard.set(connectionUrl, forKey: "medusaUrl")
 									}
 									.disabled(!connectionOk)
 								}

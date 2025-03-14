@@ -11,27 +11,35 @@ struct LoginView: View {
 	@StateObject private var loginVM = LoginViewModel()
 	@EnvironmentObject var authentication: Authentication
 	
-	@State var success = false
+	@State var connectionOk = false
+	@State var connectionUrl: String = ""
+	@State var connectionToken: String = ""
 	
 	var body: some View {
 		NavigationStack {
 			Form {
-				MedusaServer(success: $success)
+				MedusaServer { success, token, url in
+					connectionOk = success
+					if success {
+						if let token = token, let url = url {
+							connectionUrl = url
+							connectionToken = token
+						}
+					}
+				}
 				
 				Section {
 					Button("Save and Login") {
-//						loginVM.saveCredentials()
+						loginVM.storeToken(token: connectionToken)
+						UserDefaults.standard.set(connectionUrl, forKey: "medusaUrl")
 						authentication.updateValidation(success: true)
 					}
-					.disabled(!success)
+					.disabled(!connectionOk)
 					.frame(maxWidth: .infinity)
 					.buttonStyle(.borderedProminent)
 				}
 			}
 		}
-		.onChange(of: success, { _, newValue in
-			authentication.updateValidation(success: newValue)
-		})
 		.disabled(loginVM.showProgressView)
 		.alert(item: $loginVM.error) { error in
 			Alert(title: Text("Invalid Login"), message: Text(error.localizedDescription))
@@ -39,8 +47,22 @@ struct LoginView: View {
 		.onAppear {
 			// If Credentials are saved
 			if loginVM.hasTokenStored() {
-				//			TODO: Check if token is still valid
-				authentication.updateValidation(success: true)
+				guard let token = loginVM.getToken() else {
+					print("Error: no token stored")
+					authentication.updateValidation(success: false)
+					return
+				}
+				APIService.shared.verifyLogin(token: token) { (result: Result<String, Authentication.AuthenticationError>) in
+					switch result {
+					case .failure(let error):
+						print(error)
+						authentication.updateValidation(success: false)
+					case .success(let token):
+						// TODO: Store Token
+						authentication.updateValidation(success: true)
+					}
+				}
+				
 				
 				//			TODO: Enable FaceID Activation in Settings
 				//			authentication.requestBiometricUnlock { (result: Result<Credentials, Authentication.AuthenticationError>) in

@@ -12,6 +12,7 @@ enum MedusaServerConnectionError: Error {
 	case invalidUrl
 	case noResponse
 	case notMedusa
+	case authError
 }
 
 @Observable
@@ -31,7 +32,7 @@ class MedusaServerViewModel {
 		success = false
 	}
 	
-	func testConnection(completion: @escaping (Result<Bool, MedusaServerConnectionError>) -> Void) {
+	func testConnection(completion: @escaping (Result<String, MedusaServerConnectionError>) -> Void) {
 		loading = true
 		error = nil
 		guard let url = URL(string: url) else {
@@ -40,9 +41,7 @@ class MedusaServerViewModel {
 			completion(.failure(.invalidUrl))
 			return
 		}
-		
-//		http://10.20.0.20:9000/health
-		
+				
 		URLSession.shared.dataTask(with: url.appending(path: "/health")) { (data, response, error) in
 			self.loading = false
 			guard let data = data, error == nil else {
@@ -62,11 +61,13 @@ class MedusaServerViewModel {
 		// Check Login
 		APIService.shared.login(url: url, email: email, password: password) { (result: Result<String, Authentication.AuthenticationError>) in
 			switch result {
-			case .success(let string):
+			case .success(let token):
 				print("success")
 				self.success = true
+				completion(.success(token))
 			case .failure(let error):
 				self.error = error.localizedDescription
+				completion(.failure(.authError))
 			}
 		}
 	}
