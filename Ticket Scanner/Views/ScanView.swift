@@ -12,12 +12,7 @@ struct ScanView: View {
 		
     var body: some View {
 		NavigationStack {
-			List(medusa.products) {
-				Text($0.title ?? "No Title")
-			}
-			.onAppear {
-				medusa.getProducts()
-			}
+			Text("TODO: Everything")
 			.navigationTitle("Scan Tickets")
 		}
     }

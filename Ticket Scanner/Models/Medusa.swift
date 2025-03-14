@@ -77,6 +77,13 @@ class Medusa {
 			}
 		}
 	}
+	
+	init(user: User, server: Server, products: [Products]) {
+		self.isAuthenticated = true
+		self.user = user
+		self.server = server
+		self.products = products
+	}
 }
 
 
